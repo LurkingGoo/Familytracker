@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SupabaseProvider } from "@/components/providers/supabase-provider";
+import { PwaShell } from "@/components/pwa-shell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +16,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TripFinance",
   description: "Cooperative & personal expense tracking",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TripFinance",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -28,12 +41,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <SupabaseProvider>
+      <body className="min-h-full flex flex-col bg-black">
+        <PwaShell>
           {children}
-        </SupabaseProvider>
+        </PwaShell>
       </body>
     </html>
   );
 }
-
