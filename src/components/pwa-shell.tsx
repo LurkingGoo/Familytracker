@@ -30,7 +30,7 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
 
           {/* Native Mobile Bottom Navigation Bar */}
           {!isAuthPage && (
-            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/75 backdrop-blur-xl border-t border-slate-900/60 pb-safe shadow-2xl">
+            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-2xl border-t border-neutral-900 pb-safe shadow-2xl">
               <div className="mx-auto max-w-[600px] w-full h-16 flex items-center justify-around px-2">
                 {navItems.map((item) => {
                   const Icon = item.icon
@@ -44,21 +44,21 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
                     >
                       {/* Active highlight backing */}
                       {isActive && (
-                        <span className="absolute top-0 h-0.5 w-10 bg-linear-to-r from-violet-500 to-cyan-400 rounded-full" />
+                        <span className="absolute top-0 h-0.5 w-10 bg-white rounded-full" />
                       )}
 
                       <Icon
                         className={`h-5 w-5 transition-all duration-300 ${
                           isActive
-                            ? 'text-violet-400 scale-110'
-                            : 'text-slate-500 group-hover:text-slate-300'
+                            ? 'text-white scale-110'
+                            : 'text-neutral-500 group-hover:text-neutral-300'
                         }`}
                       />
                       <span
                         className={`text-[9px] font-semibold tracking-wide transition-all ${
                           isActive
-                            ? 'text-slate-200'
-                            : 'text-slate-500 group-hover:text-slate-400'
+                            ? 'text-white'
+                            : 'text-neutral-500 group-hover:text-neutral-400'
                         }`}
                       >
                         {item.label}
