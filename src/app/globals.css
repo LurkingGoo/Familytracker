@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 16px);
+}
+@utility min-h-screen-safe {
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+
