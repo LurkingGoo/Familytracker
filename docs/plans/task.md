@@ -9,4 +9,4 @@
 | task-7 | Transaction Entry and Split Distribution | completed | Wrote useTransactions client-side UUID hooks, implemented add-transaction dialog forms, and verified compile |
 | task-8 | Personal Expenses Dashboard (Private Ledger) | completed | Coded personal vault dashboard showing monthly spending metrics, ledger history, and full AddTransaction integration |
 | task-9 | Shared Workspace Dashboard, Metrics & Debt Settlement | completed | Programmed greedy matcher debts engine, coded workspaces detail dashboards, enabled RLS updates, and verified build |
-| task-10 | PWA Shell, Safe Areas & Offline-Ready Query Persister | in_progress | Configuring the Serwist service worker, public manifest settings, bottom navigation bars, and indexedDB caches |
+| task-10 | PWA Shell, Safe Areas & Offline-Ready Query Persister | completed | Programmed PwaShell navigation bars, setup manifest/icons, configured Serwist offline compiler, and verified Webpack build |
