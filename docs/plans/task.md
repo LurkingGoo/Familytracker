@@ -6,7 +6,7 @@
 | task-4 | Supabase Client, Auth Provider & Profile Middleware | completed | Configured client-side browser wrappers, created loading context, designed native-style login, added cookie refresh, and verified build |
 | task-5 | Group Workspaces Management (Create & Join) | completed | Created group dashboard, designed creation modal with card presets, coded join code RPC integrations, and resolved Base UI Trigger render typing |
 | task-6 | Cards Management & Card Selection Merging | completed | Created private cards wallet UI with credit-card visual designs, wrote useMergedCards deduplication hooks, and verified build |
-| task-7 | Transaction Entry and Split Distribution | in_progress | Writing transaction hook with client-side UUID generation and split amount validations, and transaction forms |
-| task-8 | Personal Expenses Dashboard (Private Ledger) | pending | |
-| task-9 | Shared Workspace Dashboard, Metrics & Debt Settlement | pending | |
-| task-10 | PWA Shell, Safe Areas & Offline-Ready Query Persister | pending | |
+| task-7 | Transaction Entry and Split Distribution | completed | Wrote useTransactions client-side UUID hooks, implemented add-transaction dialog forms, and verified compile |
+| task-8 | Personal Expenses Dashboard (Private Ledger) | completed | Coded personal vault dashboard showing monthly spending metrics, ledger history, and full AddTransaction integration |
+| task-9 | Shared Workspace Dashboard, Metrics & Debt Settlement | completed | Programmed greedy matcher debts engine, coded workspaces detail dashboards, enabled RLS updates, and verified build |
+| task-10 | PWA Shell, Safe Areas & Offline-Ready Query Persister | in_progress | Configuring the Serwist service worker, public manifest settings, bottom navigation bars, and indexedDB caches |
