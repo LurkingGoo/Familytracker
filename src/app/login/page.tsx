@@ -1,28 +1,102 @@
 'use client'
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/providers/supabase-provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sparkles, TrendingUp, ShieldCheck } from 'lucide-react'
+import { Sparkles, ShieldCheck, TrendingUp, KeyRound, Mail, User as UserIcon, ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
-  const { signInWithGoogle, loading } = useAuth()
+  const { signInWithOtp, verifyOtp, signUpWithPassword, signInWithPassword, loading } = useAuth()
+  
+  // Auth mode selection: 'otp' = One-Time Code, 'password' = Email/Password credentials
+  const [authMode, setAuthMode] = useState<'otp' | 'password'>('otp')
+  
+  // Email OTP Flow States
+  const [email, setEmail] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpToken, setOtpToken] = useState('')
+  const [submittingOtp, setSubmittingOtp] = useState(false)
+  
+  // Email & Password Flow States
+  const [passEmail, setPassEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [passName, setPassName] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [submittingPassword, setSubmittingPassword] = useState(false)
 
-  const handleLogin = async () => {
+  // OTP handlers
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    setSubmittingOtp(true)
     try {
-      await signInWithGoogle()
-    } catch (error) {
-      console.error('Error signing in with Google:', error)
+      await signInWithOtp(email)
+      setOtpSent(true)
+      toast.success('Verification code has been sent to your email!')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send verification code')
+    } finally {
+      setSubmittingOtp(false)
     }
   }
 
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otpToken || otpToken.length < 6) {
+      toast.error('Please enter the 6-digit verification code')
+      return
+    }
+    setSubmittingOtp(true)
+    try {
+      await verifyOtp(email, otpToken)
+      toast.success('Successfully signed in!')
+    } catch (error: any) {
+      toast.error(error.message || 'Verification failed. Please check the code.')
+    } finally {
+      setSubmittingOtp(false)
+    }
+  }
+
+  // Password handlers
+  const handlePasswordAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!passEmail || !password) {
+      toast.error('Please fill in all credentials')
+      return
+    }
+    if (isSignUp && password.length < 6) {
+      toast.error('Password must be at least 6 characters long')
+      return
+    }
+    
+    setSubmittingPassword(true)
+    try {
+      if (isSignUp) {
+        await signUpWithPassword(passEmail, password, passName)
+        toast.success('Account created successfully!')
+      } else {
+        await signInWithPassword(passEmail, password)
+        toast.success('Successfully signed in!')
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Authentication failed. Please verify credentials.')
+    } finally {
+      setSubmittingPassword(false)
+    }
+  }
+
+  const isFormLoading = loading || submittingOtp || submittingPassword
+
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-radial from-slate-900 via-slate-950 to-black px-4 py-8 text-white">
-      {/* Background ambient light */}
-      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-violet-600/10 blur-[120px]" />
-      <div className="absolute bottom-[-20%] right-[-20%] h-[60%] w-[60%] rounded-full bg-cyan-600/10 blur-[120px]" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-4 py-8 text-white">
+      {/* Subtle background ambient blur */}
+      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -36,80 +110,255 @@ export default function LoginPage() {
             initial={{ scale: 0.8, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-tr from-violet-600 to-cyan-500 shadow-lg shadow-violet-500/30"
+            className="flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl"
           >
-            <Sparkles className="h-8 w-8 text-white" />
+            <Sparkles className="h-8 w-8 text-neutral-200" />
           </motion.div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="mt-4 text-3xl font-black tracking-tight bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
             TripFinance
           </h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-1.5 text-xs text-neutral-500 uppercase tracking-wider font-semibold">
             Cooperative & personal expense tracking
           </p>
         </div>
 
-        {/* Login Card */}
-        <Card className="border-slate-800/80 bg-slate-950/40 backdrop-blur-xl shadow-2xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl font-semibold text-white">Welcome Back</CardTitle>
-            <CardDescription className="text-slate-400 text-xs">
+        {/* Dynamic Glassmorphic Card */}
+        <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl shadow-2xl overflow-hidden">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl font-bold text-white">Welcome Back</CardTitle>
+            <CardDescription className="text-neutral-400 text-xs">
               Log in to manage your private and family workspace budgets
             </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            <div className="grid gap-4">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleLogin}
-                disabled={loading}
-                className="w-full border-slate-800 bg-slate-900/60 hover:bg-slate-800 hover:text-white transition-all duration-300 py-6 text-sm font-medium flex items-center justify-center gap-3 text-slate-200 rounded-xl"
+            
+            {/* Sliding Monochromatic Mode Selector */}
+            <div className="mt-6 flex rounded-xl bg-neutral-900/60 p-1 border border-neutral-900">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('otp')
+                  setOtpSent(false)
+                }}
+                className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-300 ${
+                  authMode === 'otp'
+                    ? 'bg-neutral-800 text-white shadow-md'
+                    : 'text-neutral-500 hover:text-neutral-300'
+                }`}
               >
-                {/* Google SVG Icon */}
-                <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                Continue with Google
-              </Button>
+                One-Time Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('password')}
+                className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all duration-300 ${
+                  authMode === 'password'
+                    ? 'bg-neutral-800 text-white shadow-md'
+                    : 'text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                Password Access
+              </button>
             </div>
+          </CardHeader>
+          
+          <CardContent className="flex flex-col gap-6 pt-2">
+            <AnimatePresence mode="wait">
+              {authMode === 'otp' ? (
+                /* EMAIL OTP DUAL-PHASE FORM */
+                <motion.div
+                  key="otp-form"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-4"
+                >
+                  {!otpSent ? (
+                    /* Phase 1: Request OTP Code */
+                    <form onSubmit={handleSendOtp} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                          <Mail className="h-3.5 w-3.5" /> Email Address
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                        />
+                      </div>
 
-            {/* Premium Highlights */}
-            <div className="border-t border-slate-800/80 pt-6 flex flex-col gap-4">
+                      <Button
+                        type="submit"
+                        disabled={isFormLoading}
+                        className="w-full bg-white hover:bg-neutral-200 text-black font-bold rounded-xl py-6 shadow-md transition-all duration-300 flex items-center justify-center gap-2 border border-transparent mt-2"
+                      >
+                        {isFormLoading ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                        ) : (
+                          'Send Verification Code'
+                        )}
+                      </Button>
+                    </form>
+                  ) : (
+                    /* Phase 2: Enter Verification Code */
+                    <form onSubmit={handleVerifyOtp} className="space-y-4">
+                      <button
+                        type="button"
+                        onClick={() => setOtpSent(false)}
+                        className="text-neutral-500 hover:text-white text-xs font-medium flex items-center gap-1 transition-colors pl-1 mb-2"
+                      >
+                        <ArrowLeft className="h-3 w-3" /> Change Email
+                      </button>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                          <KeyRound className="h-3.5 w-3.5" /> Verification Code
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={6}
+                          value={otpToken}
+                          onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ''))}
+                          placeholder="123456"
+                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-center tracking-widest text-lg font-mono text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                        />
+                        <p className="text-[10px] text-neutral-500 text-center mt-1">
+                          Sent to <span className="text-neutral-300 font-semibold">{email}</span>
+                        </p>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={isFormLoading}
+                        className="w-full bg-white hover:bg-neutral-200 text-black font-bold rounded-xl py-6 shadow-md transition-all duration-300 flex items-center justify-center gap-2 border border-transparent"
+                      >
+                        {isFormLoading ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                        ) : (
+                          'Verify & Access Vault'
+                        )}
+                      </Button>
+
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isFormLoading}
+                        className="w-full text-center text-xs text-neutral-400 hover:text-white transition-colors duration-300 py-2 font-medium"
+                      >
+                        Resend Code
+                      </button>
+                    </form>
+                  )}
+                </motion.div>
+              ) : (
+                /* PASSWORD SIGNUP / LOGIN DUAL FORM */
+                <motion.div
+                  key="password-form"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <form onSubmit={handlePasswordAuth} className="space-y-4">
+                    {isSignUp && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                          <UserIcon className="h-3.5 w-3.5" /> Full Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={passName}
+                          onChange={(e) => setPassName(e.target.value)}
+                          placeholder="Alexander"
+                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                        <Mail className="h-3.5 w-3.5" /> Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={passEmail}
+                        onChange={(e) => setPassEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                        <KeyRound className="h-3.5 w-3.5" /> Password
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={isFormLoading}
+                      className="w-full bg-white hover:bg-neutral-200 text-black font-bold rounded-xl py-6 shadow-md transition-all duration-300 flex items-center justify-center gap-2 border border-transparent mt-2"
+                    >
+                      {isFormLoading ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                      ) : isSignUp ? (
+                        'Create Account'
+                      ) : (
+                        'Sign In'
+                      )}
+                    </Button>
+
+                    <div className="text-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsSignUp(!isSignUp)}
+                        className="text-xs text-neutral-400 hover:text-white transition-colors duration-300 font-semibold"
+                      >
+                        {isSignUp
+                          ? 'Already have an account? Sign In'
+                          : "New here? Create a family account"}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Apple Style Monochromatic Feature Highlights */}
+            <div className="border-t border-neutral-900 pt-6 flex flex-col gap-4">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600/10 text-violet-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-300">
                   <ShieldCheck className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-white">Private & Secure</h4>
-                  <p className="text-[10px] text-slate-400">
-                    Row Level Security (RLS) ensures personal expenses stay strictly invisible to others.
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wide">Private & Secure</h4>
+                  <p className="text-[10px] text-neutral-500 mt-0.5 leading-relaxed">
+                    Row Level Security (RLS) ensures personal expenses stay strictly invisible to other workspace members.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-600/10 text-cyan-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-300">
                   <TrendingUp className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-white">Dynamic Debt Splitting</h4>
-                  <p className="text-[10px] text-slate-400">
-                    Seamlessly distribute family group tabs with instant settlement metrics.
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wide">Cupertino Debt Matching</h4>
+                  <p className="text-[10px] text-neutral-500 mt-0.5 leading-relaxed">
+                    Instantly resolve cooperative group balance splits with high-efficiency settlement matching metrics.
                   </p>
                 </div>
               </div>
