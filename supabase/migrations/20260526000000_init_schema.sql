@@ -140,57 +140,69 @@ $$ language plpgsql security definer;
 -- Profiles Policies
 create policy "Enable read access for all authenticated users"
   on public.profiles for select
-  using (auth.role() = 'authenticated');
+  to authenticated
+  using (true);
 
 create policy "Enable update for users own profile"
   on public.profiles for update
+  to authenticated
   using (auth.uid() = id);
 
 -- Groups Policies
 create policy "Allow read access to group members"
   on public.groups for select
+  to authenticated
   using (id in (select public.get_groups_for_user(auth.uid())) or created_by = auth.uid());
 
 create policy "Allow authenticated users to create a group"
   on public.groups for insert
-  with check (auth.role() = 'authenticated' and created_by = auth.uid());
+  to authenticated
+  with check (created_by = auth.uid());
 
 create policy "Allow group creators to update or delete their group"
   on public.groups for all
+  to authenticated
   using (created_by = auth.uid());
 
 -- Group Members Policies
 create policy "Allow group members to view membership lists"
   on public.group_members for select
+  to authenticated
   using (group_id in (select public.get_groups_for_user(auth.uid())));
 
 create policy "Allow direct group member insertions"
   on public.group_members for insert
+  to authenticated
   with check (auth.uid() = profile_id);
 
 create policy "Allow creators to manage group memberships"
   on public.group_members for all
+  to authenticated
   using (group_id in (select id from public.groups where created_by = auth.uid()));
 
 -- Cards Policies (Strictly Private)
 create policy "Allow full private access to own cards"
   on public.cards for all
+  to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
 -- Transactions Policies
 create policy "Allow users to view own or group transactions"
   on public.transactions for select
+  to authenticated
   using (payer_id = auth.uid() or group_id in (select public.get_groups_for_user(auth.uid())));
 
 create policy "Allow users to manage own transactions"
   on public.transactions for all
+  to authenticated
   using (payer_id = auth.uid())
   with check (payer_id = auth.uid());
 
 -- Transaction Splits Policies
 create policy "Allow select to debtor, payer, or group member"
   on public.transaction_splits for select
+  to authenticated
   using (
     debtor_id = auth.uid() or 
     (select payer_id from public.transactions where id = transaction_id) = auth.uid() or
@@ -199,5 +211,7 @@ create policy "Allow select to debtor, payer, or group member"
 
 create policy "Allow transaction payers to manage splits"
   on public.transaction_splits for all
+  to authenticated
   using ((select payer_id from public.transactions where id = transaction_id) = auth.uid())
   with check ((select payer_id from public.transactions where id = transaction_id) = auth.uid());
+
