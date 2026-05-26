@@ -50,13 +50,13 @@ export function JoinGroupDialog({ onSuccess }: JoinGroupDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button variant="outline" className="border-slate-800 bg-slate-950/40 hover:bg-slate-900 text-slate-300 hover:text-white rounded-xl py-5 px-5 font-medium flex gap-2">
-          <Users2 className="h-4 w-4 text-cyan-400" /> Enter Join Code
+        <Button variant="outline" className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-900 text-neutral-300 hover:text-white rounded-xl py-5 px-5 font-medium flex gap-2">
+          <Users2 className="h-4 w-4 text-neutral-300" /> Enter Join Code
         </Button>
       } />
-      <DialogContent className="border-slate-800 bg-slate-950/95 text-white max-w-[400px] rounded-2xl shadow-2xl backdrop-blur-xl">
+      <DialogContent className="border-neutral-900 bg-neutral-950/95 text-white max-w-[400px] rounded-2xl shadow-2xl backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
             Join Family Group
           </DialogTitle>
           <DialogDescription className="text-slate-400 text-xs mt-1">
@@ -73,7 +73,7 @@ export function JoinGroupDialog({ onSuccess }: JoinGroupDialogProps) {
               placeholder="FAM-XXXXXX"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 uppercase tracking-widest font-mono text-center text-lg placeholder-slate-600 focus:ring-violet-500 py-6"
+              className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 uppercase tracking-widest font-mono text-center text-lg placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white py-6"
             />
           </div>
 
@@ -81,7 +81,7 @@ export function JoinGroupDialog({ onSuccess }: JoinGroupDialogProps) {
           <Button
             type="submit"
             disabled={submitting}
-            className="w-full bg-linear-to-r from-cyan-500 to-violet-600 hover:from-cyan-600 hover:to-violet-700 text-white font-medium rounded-xl py-6 shadow-lg shadow-cyan-500/10 flex items-center justify-center gap-2"
+            className="w-full bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl py-6 shadow-2xl flex items-center justify-center gap-2 border border-transparent"
           >
             {submitting ? 'Verifying Invite...' : 'Join Group Space'}
             <ArrowRight className="h-4 w-4" />

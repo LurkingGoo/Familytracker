@@ -47,17 +47,16 @@ export default function PersonalDashboard() {
   }
 
   return (
-    <div className="min-h-screen pb-safe bg-radial from-slate-900 via-slate-950 to-black text-white px-4 py-8">
-      {/* Backdrops */}
-      <div className="absolute top-[-10%] left-[-15%] h-[50%] w-[50%] rounded-full bg-violet-600/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] h-[50%] w-[50%] rounded-full bg-cyan-600/5 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8">
+      {/* Subtle background ambient blur */}
+      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
       <div className="mx-auto max-w-[600px] w-full z-10 relative">
         {/* Navigation / Header */}
-        <div className="flex items-center justify-between mb-8 border-b border-slate-900 pb-4">
+        <div className="flex items-center justify-between mb-8 border-b border-neutral-900 pb-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-linear-to-tr from-violet-600 to-cyan-500 shadow-md shadow-violet-500/10">
-              <Wallet className="h-5 w-5 text-white" />
+            <div className="h-10 w-10 flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 shadow-md">
+              <Wallet className="h-5 w-5 text-neutral-300" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white leading-none">TripFinance</h1>
@@ -69,7 +68,7 @@ export default function PersonalDashboard() {
               variant="outline"
               size="icon"
               onClick={() => router.push('/groups')}
-              className="border-slate-800 bg-slate-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
+              className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
               title="Workspaces"
             >
               <Users className="h-4 w-4" />
@@ -78,7 +77,7 @@ export default function PersonalDashboard() {
               variant="outline"
               size="icon"
               onClick={() => router.push('/cards')}
-              className="border-slate-800 bg-slate-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
+              className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
               title="Wallet"
             >
               <CreditCard className="h-4 w-4" />
@@ -98,10 +97,10 @@ export default function PersonalDashboard() {
         {/* Dashboard Title & Actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-0.5">
-            <h2 className="text-2xl font-black tracking-tight bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-black tracking-tight bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
               Personal Vault
             </h2>
-            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest text-cyan-400">
+            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest text-neutral-400">
               Private Ledger
             </p>
           </div>
@@ -117,10 +116,10 @@ export default function PersonalDashboard() {
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md">
+          <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl rounded-xl p-3 shadow-md">
             <CardHeader className="p-0 pb-1.5 flex flex-row items-center justify-between">
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Total Spent</span>
-              <TrendingUp className="h-3 w-3 text-emerald-400" />
+              <TrendingUp className="h-3 w-3 text-neutral-400" />
             </CardHeader>
             <CardContent className="p-0">
               <span className="text-lg font-bold text-white tracking-wide">
@@ -129,10 +128,10 @@ export default function PersonalDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md">
+          <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl rounded-xl p-3 shadow-md">
             <CardHeader className="p-0 pb-1.5 flex flex-row items-center justify-between">
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Payments</span>
-              <Calendar className="h-3 w-3 text-violet-400" />
+              <Calendar className="h-3 w-3 text-neutral-400" />
             </CardHeader>
             <CardContent className="p-0">
               <span className="text-lg font-bold text-white">
@@ -141,10 +140,10 @@ export default function PersonalDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md overflow-hidden">
+          <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl rounded-xl p-3 shadow-md overflow-hidden">
             <CardHeader className="p-0 pb-1.5 flex flex-row items-center justify-between">
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Top Card</span>
-              <CreditCard className="h-3 w-3 text-cyan-400" />
+              <CreditCard className="h-3 w-3 text-neutral-400" />
             </CardHeader>
             <CardContent className="p-0">
               <span className="text-xs font-bold text-white truncate block max-w-full">
@@ -162,7 +161,7 @@ export default function PersonalDashboard() {
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <p className="text-xs text-slate-500 font-medium">Loading private ledger...</p>
             </div>
           ) : (
@@ -173,7 +172,7 @@ export default function PersonalDashboard() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex flex-col items-center justify-center border border-slate-900 border-dashed rounded-2xl py-16 px-4 text-center bg-slate-950/20"
+                    className="flex flex-col items-center justify-center border border-neutral-900 border-dashed rounded-2xl py-16 px-4 text-center bg-neutral-950/20"
                   >
                     <Wallet className="h-8 w-8 text-slate-600 mb-2.5" />
                     <h4 className="text-xs font-semibold text-slate-400">Ledger is Clean</h4>
@@ -190,10 +189,10 @@ export default function PersonalDashboard() {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Card className="border-slate-800/80 bg-slate-950/40 hover:bg-slate-950/60 backdrop-blur-xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4">
+                      <Card className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-950/60 backdrop-blur-2xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4">
                         {/* Transaction Detail */}
                         <div className="flex items-center gap-3 max-w-[65%]">
-                          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-900/60 border border-slate-800/80 text-slate-400 group-hover:text-violet-400 transition-colors duration-300">
+                          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-neutral-900/60 border border-neutral-800 text-neutral-400 group-hover:text-white transition-colors duration-300">
                             <ArrowUpRight className="h-4.5 w-4.5" />
                           </div>
                           <div className="space-y-0.5 min-w-0">
@@ -201,7 +200,7 @@ export default function PersonalDashboard() {
                               {tx.description}
                             </h4>
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <Badge className="border-slate-900 bg-slate-900/60 text-slate-400 hover:bg-slate-900 rounded-md text-[9px] px-1.5 py-0">
+                              <Badge className="border-neutral-850 bg-neutral-900/60 text-neutral-400 hover:bg-neutral-900 rounded-md text-[9px] px-1.5 py-0">
                                 {tx.card_name || 'Cash'}
                               </Badge>
                               <span className="text-[9px] text-slate-500">

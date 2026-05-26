@@ -109,14 +109,14 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button className="bg-linear-to-r from-violet-600 to-cyan-500 hover:from-violet-700 hover:to-cyan-600 text-white rounded-xl shadow-lg shadow-violet-500/20 font-medium py-5 px-5 flex gap-2">
+        <Button className="bg-white hover:bg-neutral-200 text-black rounded-xl shadow-lg font-medium py-5 px-5 flex gap-2 border border-transparent">
           <Plus className="h-4 w-4" /> Create Family Group
         </Button>
       } />
-      <DialogContent className="border-slate-800 bg-slate-950/95 text-white max-w-[420px] rounded-2xl shadow-2xl backdrop-blur-xl">
+      <DialogContent className="border-neutral-900 bg-neutral-950/95 text-white max-w-[420px] rounded-2xl shadow-2xl backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            <Sparkles className="h-5 w-5 text-violet-400" /> Create Workspace
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
+            <Sparkles className="h-5 w-5 text-neutral-300" /> Create Workspace
           </DialogTitle>
           <DialogDescription className="text-slate-400 text-xs mt-1">
             Establish a persistent family or group hub to share expenses and split balances.
@@ -132,7 +132,7 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
               placeholder="e.g. Koh Family Home, Japan 2026"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 placeholder-slate-500 focus:ring-violet-500"
+              className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white"
             />
           </div>
 
@@ -145,13 +145,13 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
                 placeholder="FAM-XXXXXX"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 uppercase tracking-widest font-mono focus:ring-violet-500"
+                className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 uppercase tracking-widest font-mono focus:outline-none focus:ring-1 focus:ring-white focus:border-white"
               />
               <Button
                 variant="outline"
                 type="button"
                 onClick={handleRegenerateCode}
-                className="border-slate-800 bg-slate-900/40 hover:bg-slate-800 text-slate-300 text-xs rounded-xl"
+                className="border-neutral-800 bg-neutral-900/40 hover:bg-neutral-800 text-slate-300 text-xs rounded-xl"
               >
                 Generate
               </Button>
@@ -169,12 +169,12 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
                 placeholder="e.g. Amex Gold"
                 value={newCard}
                 onChange={(e) => setNewCard(e.target.value)}
-                className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 placeholder-slate-500 focus:ring-violet-500"
+                className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white"
               />
               <Button
                 type="button"
                 onClick={handleAddPreset}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl px-3"
+                className="bg-neutral-800 hover:bg-neutral-750 text-slate-200 rounded-xl px-3"
               >
                 Add
               </Button>
@@ -194,7 +194,7 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <Badge className="border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1 flex items-center gap-1.5 font-normal">
+                    <Badge className="border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800 text-slate-300 text-xs rounded-lg px-2 py-1 flex items-center gap-1.5 font-normal">
                       {preset}
                       <button
                         type="button"
@@ -214,7 +214,7 @@ export function CreateGroupDialog({ onSuccess }: CreateGroupDialogProps) {
           <Button
             type="submit"
             disabled={submitting}
-            className="w-full bg-linear-to-r from-violet-600 to-cyan-500 hover:from-violet-700 hover:to-cyan-600 text-white font-medium rounded-xl py-6 mt-4 shadow-lg shadow-violet-500/10 flex items-center justify-center gap-2"
+            className="w-full bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl py-6 mt-4 shadow-2xl flex items-center justify-center gap-2 border border-transparent"
           >
             {submitting ? 'Creating Group...' : 'Create Group Workspace'}
           </Button>

@@ -63,21 +63,20 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="min-h-screen pb-safe bg-radial from-slate-900 via-slate-950 to-black text-white px-4 py-8">
-      {/* Glow effects */}
-      <div className="absolute top-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-violet-600/5 blur-[100px]" />
-      <div className="absolute bottom-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-cyan-600/5 blur-[100px]" />
+    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8">
+      {/* Subtle background ambient blur */}
+      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
       <div className="mx-auto max-w-[600px] w-full z-10 relative">
         {/* Header Block */}
         <div className="flex flex-col gap-1 mb-8">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-violet-400 uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-300 uppercase tracking-widest">
             <Sparkles className="h-3 w-3" /> Shared Hubs
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black tracking-tight bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
             Shared Workspaces
           </h1>
-          <p className="text-slate-400 text-xs">
+          <p className="text-neutral-400 text-xs">
             Collaborative spaces for family expenses, trip calculations, and shared cards preset.
           </p>
         </div>
@@ -91,7 +90,7 @@ export default function GroupsPage() {
         {/* Groups List */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <p className="text-xs text-slate-500 font-medium">Fetching workspaces...</p>
           </div>
         ) : (
@@ -102,7 +101,7 @@ export default function GroupsPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex flex-col items-center justify-center border border-slate-900 border-dashed rounded-2xl py-16 px-4 text-center bg-slate-950/20 backdrop-blur-sm"
+                  className="flex flex-col items-center justify-center border border-neutral-900 border-dashed rounded-2xl py-16 px-4 text-center bg-neutral-950/20 backdrop-blur-sm"
                 >
                   <Users2 className="h-10 w-10 text-slate-600 mb-3" />
                   <h3 className="text-sm font-semibold text-slate-300">No Shared Groups Yet</h3>
@@ -119,11 +118,11 @@ export default function GroupsPage() {
                     exit={{ opacity: 0, y: -15 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="border-slate-800/80 bg-slate-950/40 hover:bg-slate-950/60 backdrop-blur-xl shadow-lg transition-all duration-300 group overflow-hidden">
-                      <div className="absolute top-0 left-0 h-1 w-full bg-linear-to-r from-violet-600/30 to-cyan-500/30 group-hover:from-violet-600 group-hover:to-cyan-500 transition-all duration-500" />
+                    <Card className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-950/60 backdrop-blur-2xl shadow-lg transition-all duration-300 group overflow-hidden">
+                      <div className="absolute top-0 left-0 h-0.5 w-full bg-neutral-800/40 group-hover:bg-white transition-all duration-500" />
                       <CardHeader className="flex flex-row items-start justify-between pb-3">
                         <div className="space-y-1 max-w-[70%]">
-                          <CardTitle className="text-lg font-bold text-white group-hover:text-violet-300 transition-colors duration-300 truncate">
+                          <CardTitle className="text-lg font-bold text-white group-hover:text-neutral-200 transition-colors duration-300 truncate">
                             {item.groups.title}
                           </CardTitle>
                           <CardDescription className="text-[10px] text-slate-400">
@@ -131,20 +130,16 @@ export default function GroupsPage() {
                           </CardDescription>
                         </div>
                         <Badge
-                          className={
-                            item.role === 'creator'
-                              ? 'border-violet-800 bg-violet-950/30 text-violet-400 font-medium rounded-lg text-[10px] py-0.5 px-2.5'
-                              : 'border-cyan-800 bg-cyan-950/30 text-cyan-400 font-medium rounded-lg text-[10px] py-0.5 px-2.5'
-                          }
+                          className="border-neutral-800 bg-neutral-900 text-neutral-300 font-medium rounded-lg text-[10px] py-0.5 px-2.5"
                         >
                           {item.role === 'creator' ? 'Creator' : 'Member'}
                         </Badge>
                       </CardHeader>
                       <CardContent className="pb-4">
                         {/* Invite Join Code Section */}
-                        <div className="flex items-center justify-between bg-slate-900/60 border border-slate-800/50 rounded-xl px-3 py-2 text-xs">
-                          <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                            <FolderLock className="h-3.5 w-3.5 text-cyan-500" /> INVITE CODE:
+                        <div className="flex items-center justify-between bg-neutral-900/40 border border-neutral-900 rounded-xl px-3 py-2 text-xs">
+                          <span className="text-[10px] text-neutral-400 font-medium flex items-center gap-1">
+                            <FolderLock className="h-3.5 w-3.5 text-neutral-400" /> INVITE CODE:
                           </span>
                           <div className="flex items-center gap-1.5">
                             <code className="font-mono font-bold tracking-widest text-slate-200">{item.groups.join_code}</code>
@@ -167,7 +162,7 @@ export default function GroupsPage() {
                         </span>
                         <Button
                           onClick={() => router.push(`/groups/${item.groups.id}`)}
-                          className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs flex gap-1 font-medium transition-all group-hover:border-violet-500/30"
+                          className="bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-300 hover:text-white rounded-xl text-xs flex gap-1 font-semibold transition-all group-hover:border-neutral-700"
                         >
                           Open Workspace <ArrowUpRight className="h-3.5 w-3.5" />
                         </Button>

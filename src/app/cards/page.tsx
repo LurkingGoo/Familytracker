@@ -93,27 +93,26 @@ export default function CardsPage() {
   }
 
   return (
-    <div className="min-h-screen pb-safe bg-radial from-slate-900 via-slate-950 to-black text-white px-4 py-8">
-      {/* Background glow */}
-      <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-cyan-600/5 blur-[100px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-violet-600/5 blur-[100px]" />
+    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8">
+      {/* Subtle background ambient blur */}
+      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
       <div className="mx-auto max-w-[600px] w-full z-10 relative">
         {/* Header Block */}
         <div className="flex flex-col gap-1 mb-8">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400 uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-300 uppercase tracking-widest">
             <Sparkles className="h-3 w-3" /> Secure Vault
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black tracking-tight bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
             My Card Wallet
           </h1>
-          <p className="text-slate-400 text-xs">
+          <p className="text-neutral-400 text-xs">
             Manage your personal cards. These remain strictly private to you via database-level RLS.
           </p>
         </div>
 
         {/* Add Card Card */}
-        <Card className="border-slate-800/80 bg-slate-950/40 backdrop-blur-xl shadow-lg mb-8">
+        <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl shadow-lg mb-8">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold text-white">Add Private Card</CardTitle>
           </CardHeader>
@@ -124,19 +123,19 @@ export default function CardsPage() {
                   placeholder="e.g. Target RedCard, Chase Freedom"
                   value={newCardName}
                   onChange={(e) => setNewCardName(e.target.value)}
-                  className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 placeholder-slate-500 focus:ring-violet-500 py-5"
+                  className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white py-5"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-linear-to-r from-cyan-500 to-violet-600 hover:from-cyan-600 hover:to-violet-700 text-white rounded-xl shadow-lg px-5 flex gap-1 font-medium h-[42px]"
+                className="bg-white hover:bg-neutral-200 text-black rounded-xl shadow-lg px-5 flex gap-1 font-semibold h-[42px] border border-transparent"
               >
                 <Plus className="h-4 w-4" /> Add
               </Button>
             </form>
             <div className="flex items-center gap-2 mt-3 text-[10px] text-slate-500">
-              <ShieldAlert className="h-3.5 w-3.5 text-cyan-500" />
+              <ShieldAlert className="h-3.5 w-3.5 text-neutral-400" />
               <span>Row-Level Security guarantees no other group member can ever read these cards.</span>
             </div>
           </CardContent>
@@ -145,7 +144,7 @@ export default function CardsPage() {
         {/* Cards Render */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <p className="text-xs text-slate-500 font-medium">Fetching card secure keys...</p>
           </div>
         ) : (
@@ -159,7 +158,7 @@ export default function CardsPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex flex-col items-center justify-center border border-slate-900 border-dashed rounded-2xl py-12 px-4 text-center bg-slate-950/20"
+                  className="flex flex-col items-center justify-center border border-neutral-900 border-dashed rounded-2xl py-12 px-4 text-center bg-neutral-950/20"
                 >
                   <CreditCard className="h-10 w-10 text-slate-700 mb-2" />
                   <h4 className="text-xs font-semibold text-slate-400">Wallet is Empty</h4>
@@ -172,9 +171,9 @@ export default function CardsPage() {
                   {cards.map((item, idx) => {
                     // Generate different premium gradients for variation
                     const gradients = [
-                      'from-slate-900 via-zinc-900 to-neutral-900 border-zinc-800',
-                      'from-indigo-950/50 via-slate-950/70 to-neutral-950 border-indigo-950',
-                      'from-slate-950 via-slate-900 to-zinc-950 border-slate-800/80',
+                      'from-neutral-900 via-neutral-950 to-black border-neutral-800',
+                      'from-neutral-955 via-neutral-900 to-neutral-955 border-neutral-800',
+                      'from-neutral-900 via-black to-neutral-900 border-neutral-800',
                     ]
                     const gradient = gradients[idx % gradients.length]
 
@@ -188,12 +187,12 @@ export default function CardsPage() {
                         className="relative"
                       >
                         {/* Interactive glow backing card */}
-                        <div className="absolute inset-0 rounded-2xl bg-cyan-500/5 blur-md opacity-0 hover:opacity-100 transition-all duration-300" />
+                        <div className="absolute inset-0 rounded-2xl bg-white/[0.02] blur-md opacity-0 hover:opacity-100 transition-all duration-300" />
                         
                         {/* Premium Card Mockup */}
                         <div className={`p-5 rounded-2xl border bg-linear-to-br ${gradient} shadow-md flex flex-col justify-between h-[150px] relative overflow-hidden group`}>
                           {/* Inner glowing particle */}
-                          <div className="absolute top-[-20%] right-[-20%] h-[80px] w-[80px] rounded-full bg-cyan-500/10 blur-xl group-hover:bg-cyan-500/20 transition-all duration-500" />
+                          <div className="absolute top-[-20%] right-[-20%] h-[80px] w-[80px] rounded-full bg-white/[0.01] blur-xl group-hover:bg-white/[0.03] transition-all duration-500" />
                           
                           {/* Card Top */}
                           <div className="flex items-start justify-between z-10">
@@ -203,7 +202,7 @@ export default function CardsPage() {
                                 {item.card_name}
                               </span>
                             </div>
-                            <CreditCard className="h-6 w-6 text-slate-600 group-hover:text-cyan-400 transition-colors duration-300" />
+                            <CreditCard className="h-6 w-6 text-neutral-600 group-hover:text-white transition-colors duration-300" />
                           </div>
 
                           {/* Card Bottom */}

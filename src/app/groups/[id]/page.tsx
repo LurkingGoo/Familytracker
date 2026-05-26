@@ -10,7 +10,7 @@ import { calculateDebts } from '@/lib/balance-solver'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Users, ArrowUpRight, TrendingUp, Sparkles, FolderLock, Landmark, CheckSquare, Trash2 } from 'lucide-react'
+import { ArrowLeft, Users, ArrowUpRight, TrendingUp, Sparkles, FolderLock, Landmark, CheckSquare, Trash2, Check, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface GroupDetails {
@@ -45,6 +45,14 @@ export default function GroupWorkspace() {
   const [debts, setDebts] = useState<Debt[]>([])
   const [loadingDetails, setLoadingDetails] = useState(true)
   const [settling, setSettling] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    toast.success('Invite join code copied!')
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const { transactions, splits, loading: loadingTx, addTransaction, deleteTransaction, refetch } = useTransactions(groupId)
 
@@ -187,10 +195,9 @@ export default function GroupWorkspace() {
   const myBalance = myTotalPaid - myTotalOwed
 
   return (
-    <div className="min-h-screen pb-safe bg-radial from-slate-900 via-slate-950 to-black text-white px-4 py-8">
-      {/* Background glow backdrops */}
-      <div className="absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-violet-600/5 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] h-[40%] w-[40%] rounded-full bg-cyan-600/5 blur-[100px] pointer-events-none" />
+    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8">
+      {/* Subtle background ambient blur */}
+      <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
       <div className="mx-auto max-w-[600px] w-full z-10 relative">
         {/* Navigation Bar */}
@@ -199,7 +206,7 @@ export default function GroupWorkspace() {
             variant="outline"
             size="icon"
             onClick={() => router.push('/groups')}
-            className="border-slate-800 bg-slate-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
+            className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -215,70 +222,57 @@ export default function GroupWorkspace() {
 
         {/* Group Info header card */}
         {!loadingDetails && group && (
-          <Card className="border-slate-800/80 bg-slate-950/40 backdrop-blur-xl shadow-lg mb-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 h-0.5 w-full bg-linear-to-r from-violet-600 to-cyan-500" />
+          <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl shadow-lg mb-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 h-0.5 w-full bg-neutral-800/40" />
             <CardHeader className="pb-3 flex flex-row items-start justify-between">
               <div>
-                <CardTitle className="text-xl font-extrabold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                <CardTitle className="text-xl font-black bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
                   {group.title}
                 </CardTitle>
                 <CardDescription className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
-                  <Users className="h-3 w-3 text-cyan-400" /> {members.length} members in workspace
+                  <Users className="h-3 w-3 text-neutral-400" /> {members.length} members in workspace
                 </CardDescription>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className="text-[8px] text-slate-500 font-mono tracking-widest uppercase font-bold">INVITE</span>
-                <Badge className="border-slate-800 bg-slate-900/80 text-slate-300 font-mono font-bold tracking-widest text-[10px] rounded-lg px-2 py-0.5 flex gap-1">
-                  <FolderLock className="h-3 w-3 text-cyan-500" /> {group.join_code}
-                </Badge>
+                <div className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-0.5">
+                  <code className="font-mono text-[10px] font-bold text-slate-200">{group.join_code}</code>
+                  <button
+                    onClick={() => copyToClipboard(group.join_code)}
+                    className="text-slate-400 hover:text-white p-0.5 hover:bg-neutral-850 rounded"
+                  >
+                    {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                  </button>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="pb-4">
-              <div className="text-[10px] text-slate-400 flex flex-col gap-1 border-t border-slate-900 pt-3">
-                <span className="font-semibold text-slate-300">Preset Shared Cards:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {group.preset_card_names?.map((name) => (
-                    <Badge key={name} className="border-slate-900 bg-slate-900/60 text-slate-400 text-[9px] rounded-md px-1.5 py-0.5 font-normal">
-                      💳 {name}
-                    </Badge>
-                  )) || <span className="text-slate-500 italic">No presets configured</span>}
+            <CardContent className="flex justify-between items-center pb-4 pt-1 border-t border-slate-900/60">
+              <div className="space-y-0.5">
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">My Balance</span>
+                <span className={`text-base font-extrabold block tracking-wide ${myBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {myBalance >= 0 ? '+' : ''}${myBalance.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex gap-4 text-right">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Paid</span>
+                  <span className="text-xs font-semibold text-slate-300">${myTotalPaid.toFixed(2)}</span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Owe</span>
+                  <span className="text-xs font-semibold text-slate-300">${myTotalOwed.toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Group Metrics stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md">
-            <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Group Spent</span>
-            <span className="text-base font-extrabold text-white tracking-wide">
-              ${groupTotalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </Card>
-
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md">
-            <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mb-1">My Total Share</span>
-            <span className="text-base font-extrabold text-white">
-              ${myTotalOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </Card>
-
-          <Card className="border-slate-900 bg-slate-950/40 backdrop-blur-md rounded-xl p-3 shadow-md">
-            <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mb-1">My Balance</span>
-            <span className={`text-base font-extrabold tracking-wide ${myBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {myBalance >= 0 ? '+' : ''}${myBalance.toFixed(2)}
-            </span>
-          </Card>
-        </div>
-
         {/* Action bar and settlement lists */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {/* Debt Settlement card */}
           <Card className="border-slate-900 bg-slate-950/30 rounded-2xl p-4 flex flex-col justify-between gap-4">
             <div className="space-y-1">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                <Landmark className="h-3.5 w-3.5 text-violet-400" /> Balances Settlement
+                <Landmark className="h-3.5 w-3.5 text-neutral-300" /> Balances Settlement
               </h3>
               <p className="text-[9px] text-slate-500">
                 Instantly clear dynamic workspace shares between creditors and debtors.
@@ -303,7 +297,7 @@ export default function GroupWorkspace() {
                       size="sm"
                       onClick={() => handleSettleDebt(d)}
                       disabled={settling !== null}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] h-7 px-3 font-semibold"
+                      className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-[10px] h-7 px-3 font-semibold"
                     >
                       {settling === `${d.fromId}-${d.toId}` ? 'Settling...' : 'Settle'}
                     </Button>
@@ -314,7 +308,6 @@ export default function GroupWorkspace() {
           </Card>
         </div>
 
-        {/* Expenses List & Trigger dialog */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
@@ -331,7 +324,7 @@ export default function GroupWorkspace() {
 
           {loadingTx ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <p className="text-xs text-slate-500 font-medium">Fetching group ledgers...</p>
             </div>
           ) : (
@@ -361,9 +354,9 @@ export default function GroupWorkspace() {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Card className="border-slate-800/80 bg-slate-950/40 hover:bg-slate-950/60 backdrop-blur-xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4">
+                        <Card className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-950/60 backdrop-blur-2xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4">
                           <div className="flex items-center gap-3 max-w-[65%]">
-                            <div className={`h-10 w-10 flex items-center justify-center rounded-xl border transition-colors duration-300 ${isSettlement ? 'bg-emerald-950/20 border-emerald-900 text-emerald-400' : 'bg-slate-900/60 border-slate-800/80 text-slate-400 group-hover:text-violet-400'}`}>
+                            <div className={`h-10 w-10 flex items-center justify-center rounded-xl border transition-colors duration-300 ${isSettlement ? 'bg-emerald-950/20 border-emerald-900 text-emerald-400' : 'bg-neutral-900/60 border-neutral-800 text-neutral-400 group-hover:text-white'}`}>
                               <ArrowUpRight className="h-4.5 w-4.5" />
                             </div>
                             <div className="space-y-0.5 min-w-0">

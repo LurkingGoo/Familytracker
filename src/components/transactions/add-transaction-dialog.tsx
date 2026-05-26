@@ -162,14 +162,14 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
-        <Button className="bg-linear-to-r from-violet-600 to-cyan-500 hover:from-violet-700 hover:to-cyan-600 text-white rounded-xl shadow-lg font-medium flex gap-1.5 py-4 px-4">
+        <Button className="bg-white hover:bg-neutral-200 text-black rounded-xl shadow-lg font-medium flex gap-1.5 py-4 px-4 border border-transparent">
           <Plus className="h-4 w-4" /> Add Expense
         </Button>
       } />
-      <DialogContent className="border-slate-800 bg-slate-950/95 text-white max-w-[420px] rounded-2xl shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="border-neutral-900 bg-neutral-950/95 text-white max-w-[420px] rounded-2xl shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            <Sparkles className="h-5 w-5 text-violet-400" /> Record Expense
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
+            <Sparkles className="h-5 w-5 text-neutral-300" /> Record Expense
           </DialogTitle>
           <DialogDescription className="text-slate-400 text-xs mt-1">
             Input transaction amount, description, card, and splitting parameters.
@@ -189,7 +189,7 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 placeholder-slate-600 text-lg font-bold focus:ring-violet-500 py-6"
+              className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 text-lg font-bold focus:outline-none focus:ring-1 focus:ring-white focus:border-white py-6"
             />
           </div>
 
@@ -202,7 +202,7 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
               placeholder="e.g. Sushi Dinner, Fuel, Target groceries"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-200 placeholder-slate-500 focus:ring-violet-500"
+              className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white"
             />
           </div>
 
@@ -210,7 +210,7 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-300">Payment Card</Label>
             <Select value={selectedCardId} onValueChange={(val) => setSelectedCardId(val || 'cash')}>
-              <SelectTrigger className="border-slate-800 bg-slate-900/60 rounded-xl text-slate-300 text-left">
+              <SelectTrigger className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-300 text-left focus:outline-none focus:ring-1 focus:ring-white">
                 <SelectValue placeholder="Select Payment Card" />
               </SelectTrigger>
               <SelectContent className="border-slate-800 bg-slate-950 text-white rounded-xl">
@@ -283,7 +283,7 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
                             onChange={(e) =>
                               setExactShares({ ...exactShares, [m.id]: e.target.value })
                             }
-                            className="border-slate-800 bg-slate-900/60 rounded-lg text-right pl-6 focus:ring-violet-500 h-8 text-xs text-slate-200"
+                            className="border-neutral-800 bg-neutral-900/50 rounded-lg text-right pl-6 focus:outline-none focus:ring-1 focus:ring-white h-8 text-xs text-slate-200"
                           />
                         </div>
                       </div>
@@ -298,7 +298,7 @@ export function AddTransactionDialog({ groupId, members, onSuccess }: AddTransac
           <Button
             type="submit"
             disabled={submitting}
-            className="w-full bg-linear-to-r from-violet-600 to-cyan-500 hover:from-violet-700 hover:to-cyan-600 text-white font-medium rounded-xl py-6 mt-4 shadow-lg shadow-violet-500/10 flex items-center justify-center gap-2"
+            className="w-full bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl py-6 mt-4 shadow-2xl flex items-center justify-center gap-2 border border-transparent"
           >
             {submitting ? 'Recording Expense...' : 'Record Transaction'}
           </Button>
