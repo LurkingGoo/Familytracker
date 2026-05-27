@@ -4,233 +4,238 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/providers/supabase-provider'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { CreditCard, Trash2, ShieldAlert, Sparkles, Plus } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { CreditCard, Plus, Trash2, ArrowLeft, Landmark, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-interface CardItem {
-  id: string
-  card_name: string
-  created_at: string
-}
-
-export default function CardsPage() {
-  const [cards, setCards] = useState<CardItem[]>([])
+export default function CardsDashboard() {
+  const { user, supabase } = useAuth()
+  const router = useRouter()
+  
+  const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [newCardName, setNewCardName] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const { supabase, user } = useAuth()
+  const [adding, setAdding] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
 
-  const loadCards = async () => {
+  const fetchCards = async () => {
     if (!user) return
     try {
       const { data, error } = await supabase
         .from('cards')
         .select('*')
-        .order('card_name')
-
+        .order('created_at', { ascending: false })
       if (error) throw error
       setCards(data || [])
-    } catch (err) {
-      console.error('Error fetching cards:', err)
-      toast.error('Failed to load private cards')
+    } catch (err: any) {
+      toast.error('Failed to load wallet')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadCards()
+    fetchCards()
   }, [user])
 
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
-    if (!newCardName.trim()) {
-      toast.error('Card name is required')
-      return
-    }
-
-    setSubmitting(true)
+    if (!newCardName.trim()) return
+    setAdding(true)
     try {
       const { error } = await supabase
         .from('cards')
         .insert({
-          card_name: newCardName.trim(),
-          user_id: user.id,
+          user_id: user?.id,
+          card_name: newCardName.trim()
         })
-
       if (error) throw error
-
-      toast.success(`Card "${newCardName}" added to wallet!`)
+      toast.success('Card added to your secure wallet!')
       setNewCardName('')
-      await loadCards()
-    } catch (err) {
-      console.error('Error adding card:', err)
-      toast.error('Failed to add private card')
+      await fetchCards()
+      setActiveIndex(0)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add card')
     } finally {
-      setSubmitting(false)
+      setAdding(false)
     }
   }
 
-  const handleDeleteCard = async (id: string, name: string) => {
+  const handleDeleteCard = async (id: string) => {
     try {
       const { error } = await supabase
         .from('cards')
         .delete()
         .eq('id', id)
-
       if (error) throw error
-
-      toast.success(`Card "${name}" removed from wallet.`)
-      await loadCards()
-    } catch (err) {
-      console.error('Error deleting card:', err)
+      toast.success('Card deleted successfully')
+      await fetchCards()
+      setActiveIndex(0)
+    } catch (err: any) {
       toast.error('Failed to remove card')
     }
   }
 
   return (
-    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8">
-      {/* Subtle background ambient blur */}
+    <div className="min-h-screen pb-safe bg-black text-white px-4 py-8 flex flex-col items-center">
       <div className="absolute top-[-20%] left-[-20%] h-[60%] w-[60%] rounded-full bg-white/[0.01] blur-[150px] pointer-events-none" />
 
-      <div className="mx-auto max-w-[600px] w-full z-10 relative">
-        {/* Header Block */}
-        <div className="flex flex-col gap-1 mb-8">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-300 uppercase tracking-widest">
-            <Sparkles className="h-3 w-3" /> Secure Vault
-          </div>
-          <h1 className="text-3xl font-black tracking-tight bg-linear-to-b from-white to-neutral-400 bg-clip-text text-transparent">
-            My Card Wallet
-          </h1>
-          <p className="text-neutral-400 text-xs">
-            Manage your personal cards. These remain strictly private to you via database-level RLS.
-          </p>
+      <div className="mx-auto max-w-[450px] w-full z-10 flex flex-col items-center">
+        {/* Navigation */}
+        <div className="flex items-center justify-between w-full mb-8 border-b border-neutral-900 pb-4">
+          <Button
+            variant="ghost"
+            onClick={() => router.push('/personal')}
+            className="text-slate-400 hover:text-white rounded-xl px-3 flex items-center gap-1.5"
+          >
+            <ArrowLeft className="h-4 w-4" /> Vault
+          </Button>
+          <span className="text-sm font-bold uppercase tracking-widest text-slate-500">Wallet</span>
+          <div className="w-16" />
         </div>
 
-        {/* Add Card Card */}
-        <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl shadow-lg mb-8">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-white">Add Private Card</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddCard} className="flex gap-2">
-              <div className="grid gap-1.5 w-full">
-                <Input
-                  placeholder="e.g. Target RedCard, Chase Freedom"
-                  value={newCardName}
-                  onChange={(e) => setNewCardName(e.target.value)}
-                  className="border-neutral-800 bg-neutral-900/50 rounded-xl text-slate-200 placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white py-5"
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="bg-white hover:bg-neutral-200 text-black rounded-xl shadow-lg px-5 flex gap-1 font-semibold h-[42px] border border-transparent"
-              >
-                <Plus className="h-4 w-4" /> Add
-              </Button>
-            </form>
-            <div className="flex items-center gap-2 mt-3 text-[10px] text-slate-500">
-              <ShieldAlert className="h-3.5 w-3.5 text-neutral-400" />
-              <span>Row-Level Security guarantees no other group member can ever read these cards.</span>
+        {/* Swipeable Wallet Container */}
+        <div className="relative w-full h-[240px] flex items-center justify-center overflow-hidden mb-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <p className="text-xs text-slate-500 font-medium">Loading private wallet...</p>
             </div>
-          </CardContent>
-        </Card>
+          ) : cards.length === 0 ? (
+            <div className="text-center p-6 border border-neutral-900 border-dashed rounded-3xl w-full h-full flex flex-col items-center justify-center bg-neutral-950/20">
+              <CreditCard className="h-8 w-8 text-neutral-700 mb-2" />
+              <h4 className="text-xs font-semibold text-slate-400">Empty Wallet</h4>
+              <p className="text-[10px] text-slate-655 max-w-[200px] mt-1 text-neutral-500">
+                No active custom cards configured yet. Add your personal cards below.
+              </p>
+            </div>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <AnimatePresence initial={false}>
+                {cards.map((card, idx) => {
+                  const offset = idx - activeIndex
+                  const isVisible = Math.abs(offset) <= 2
+                  if (!isVisible) return null
 
-        {/* Cards Render */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            <p className="text-xs text-slate-500 font-medium">Fetching card secure keys...</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1 pl-1">
-              Registered Cards ({cards.length})
-            </h3>
-            <AnimatePresence mode="popLayout">
-              {cards.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex flex-col items-center justify-center border border-neutral-900 border-dashed rounded-2xl py-12 px-4 text-center bg-neutral-950/20"
-                >
-                  <CreditCard className="h-10 w-10 text-slate-700 mb-2" />
-                  <h4 className="text-xs font-semibold text-slate-400">Wallet is Empty</h4>
-                  <p className="text-[10px] text-slate-500 max-w-[240px] mt-1">
-                    Add custom private cards here so they appear alongside group preset cards in transaction selects.
-                  </p>
-                </motion.div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {cards.map((item, idx) => {
-                    // Generate different premium gradients for variation
-                    const gradients = [
-                      'from-neutral-900 via-neutral-950 to-black border-neutral-800',
-                      'from-neutral-955 via-neutral-900 to-neutral-955 border-neutral-800',
-                      'from-neutral-900 via-black to-neutral-900 border-neutral-800',
-                    ]
-                    const gradient = gradients[idx % gradients.length]
-
-                    return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.2 }}
-                        className="relative"
-                      >
-                        {/* Interactive glow backing card */}
-                        <div className="absolute inset-0 rounded-2xl bg-white/[0.02] blur-md opacity-0 hover:opacity-100 transition-all duration-300" />
+                  return (
+                    <motion.div
+                      key={card.id}
+                      style={{
+                        zIndex: cards.length - idx,
+                        transformOrigin: 'bottom center',
+                      }}
+                      animate={{
+                        x: offset * 280,
+                        scale: idx === activeIndex ? 1 : 0.9,
+                        opacity: idx === activeIndex ? 1 : 0.4,
+                      }}
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.4}
+                      onDragEnd={(_, info) => {
+                        if (info.offset.x < -60 && activeIndex < cards.length - 1) {
+                          setActiveIndex(activeIndex + 1)
+                        } else if (info.offset.x > 60 && activeIndex > 0) {
+                          setActiveIndex(activeIndex - 1)
+                        }
+                      }}
+                      className="absolute w-[280px] h-[170px] cursor-grab active:cursor-grabbing"
+                    >
+                      {/* Premium Card Frame */}
+                      <div className="w-full h-full rounded-2xl p-5 relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 shadow-2xl flex flex-col justify-between">
+                        {/* Shimmer Highlight */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.04] to-transparent pointer-events-none" />
                         
-                        {/* Premium Card Mockup */}
-                        <div className={`p-5 rounded-2xl border bg-linear-to-br ${gradient} shadow-md flex flex-col justify-between h-[150px] relative overflow-hidden group`}>
-                          {/* Inner glowing particle */}
-                          <div className="absolute top-[-20%] right-[-20%] h-[80px] w-[80px] rounded-full bg-white/[0.01] blur-xl group-hover:bg-white/[0.03] transition-all duration-500" />
-                          
-                          {/* Card Top */}
-                          <div className="flex items-start justify-between z-10">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[10px] text-slate-500 font-mono tracking-widest">PRIVATE CARD</span>
-                              <span className="text-base font-bold text-white tracking-wide truncate max-w-[180px]">
-                                {item.card_name}
-                              </span>
-                            </div>
-                            <CreditCard className="h-6 w-6 text-neutral-600 group-hover:text-white transition-colors duration-300" />
+                        {/* Header Details */}
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-1.5">
+                            <Sparkles className="h-4 w-4 text-neutral-400" />
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Vault</span>
                           </div>
-
-                          {/* Card Bottom */}
-                          <div className="flex items-end justify-between z-10 pt-4">
-                            <div className="space-y-0.5">
-                              <div className="h-4 w-6 bg-slate-800 rounded-md opacity-70 mb-1.5" /> {/* Simulating Card Chip */}
-                              <span className="text-[9px] text-slate-500 font-mono">
-                                ADDED: {new Date(item.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteCard(item.id, item.card_name)}
-                              className="text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 rounded-lg h-8 w-8 transition-all"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Landmark className="h-5 w-5 text-neutral-300" />
                         </div>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              )}
-            </AnimatePresence>
+
+                        {/* Card Name */}
+                        <div className="space-y-0.5">
+                          <h4 className="text-base font-black tracking-wide text-white truncate max-w-full">
+                            {card.card_name}
+                          </h4>
+                          <p className="text-[8px] text-neutral-500 font-mono tracking-widest">
+                            SECURED RLS CREDENTIAL
+                          </p>
+                        </div>
+
+                        {/* Card Chip / Brand Metallic Accent */}
+                        <div className="flex justify-between items-end">
+                          <div className="h-6 w-8 rounded-md bg-neutral-900 border border-neutral-800/80 flex items-center justify-center">
+                            <div className="h-3 w-4 rounded-sm border border-neutral-700/60" />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteCard(card.id)}
+                            className="h-7 w-7 text-neutral-600 hover:text-rose-400 hover:bg-rose-950/15 rounded-md"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+
+        {/* Page Selector Dots */}
+        {!loading && cards.length > 0 && (
+          <div className="flex gap-1.5 justify-center items-center mb-8">
+            {cards.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 w-1.5 rounded-full transition-all duration-350 ${
+                  idx === activeIndex ? 'bg-white w-3' : 'bg-neutral-800'
+                }`}
+              />
+            ))}
           </div>
         )}
+
+        {/* Register Card Form */}
+        <Card className="w-full border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl p-5 rounded-2xl shadow-xl">
+          <form onSubmit={handleAddCard} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider pl-0.5">
+                Register Custom Card
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={22}
+                value={newCardName}
+                onChange={(e) => setNewCardName(e.target.value)}
+                placeholder="e.g. Target RedCard"
+                className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              disabled={adding}
+              className="w-full bg-white hover:bg-neutral-200 text-black font-bold rounded-xl py-5 shadow-md flex items-center justify-center gap-2 border border-transparent"
+            >
+              {adding ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" /> Add Card to Wallet
+                </>
+              )}
+            </Button>
+          </form>
+        </Card>
       </div>
     </div>
   )
