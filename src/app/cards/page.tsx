@@ -217,7 +217,7 @@ export default function CardsDashboard() {
                 value={newCardName}
                 onChange={(e) => setNewCardName(e.target.value)}
                 placeholder="e.g. Target RedCard"
-                className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
               />
             </div>
             

@@ -185,7 +185,7 @@ export default function LoginPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
-                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                          className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
                         />
                       </div>
 
@@ -223,7 +223,7 @@ export default function LoginPage() {
                           value={otpToken}
                           onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ''))}
                           placeholder="123456"
-                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-center tracking-widest text-lg font-mono text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                          className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-center tracking-widest text-lg font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
                         />
                         <p className="text-[10px] text-neutral-500 text-center mt-1">
                           Sent to <span className="text-neutral-300 font-semibold">{email}</span>
@@ -274,7 +274,7 @@ export default function LoginPage() {
                           value={passName}
                           onChange={(e) => setPassName(e.target.value)}
                           placeholder="Alexander"
-                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                          className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
                         />
                       </div>
                     )}
@@ -289,7 +289,7 @@ export default function LoginPage() {
                         value={passEmail}
                         onChange={(e) => setPassEmail(e.target.value)}
                         placeholder="name@example.com"
-                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                        className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
                       />
                     </div>
 
@@ -303,7 +303,7 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-700 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                        className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
                       />
                     </div>
 
