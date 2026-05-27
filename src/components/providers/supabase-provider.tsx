@@ -18,8 +18,6 @@ interface SupabaseContextType {
   profile: Profile | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
-  signInWithOtp: (email: string) => Promise<void>
-  verifyOtp: (email: string, token: string) => Promise<void>
   signUpWithPassword: (email: string, password: string, name?: string) => Promise<void>
   signInWithPassword: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
@@ -116,27 +114,6 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
-  const signInWithOtp = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
-        // Prevent silent ghost-account creation on email typos
-        shouldCreateUser: false,
-      },
-    })
-    if (error) throw error
-  }
-
-  const verifyOtp = async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
-    })
-    if (error) throw error
-  }
-
   const signUpWithPassword = async (email: string, password: string, name?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
@@ -172,8 +149,6 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
         profile,
         loading,
         signInWithGoogle,
-        signInWithOtp,
-        verifyOtp,
         signUpWithPassword,
         signInWithPassword,
         signOut,
