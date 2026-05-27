@@ -215,3 +215,33 @@ create policy "Allow transaction payers to manage splits"
   using ((select payer_id from public.transactions where id = transaction_id) = auth.uid())
   with check ((select payer_id from public.transactions where id = transaction_id) = auth.uid());
 
+
+-- =========================================================================
+-- SECURE CARD PHOTO STORAGE EXTENSION
+-- =========================================================================
+
+-- Add image reference to cards
+ALTER TABLE public.cards ADD COLUMN IF NOT EXISTS card_image_url text;
+
+-- Storage Bucket for Card Images
+insert into storage.buckets (id, name, public)
+values ('card_images', 'card_images', true)
+on conflict (id) do nothing;
+
+-- Storage RLS Policies
+create policy "Allow authenticated users to upload card images"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'card_images');
+
+create policy "Allow users to view card images"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'card_images');
+
+create policy "Allow users to delete own card images"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'card_images' and (select auth.uid())::text = owner::text);
+
+

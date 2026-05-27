@@ -6,6 +6,12 @@ export interface Transaction {
   id: string
   amount: number
   description: string
+  category: string
+  location: string | null
+  state: string | null
+  currency: string
+  foreign_amount: number
+  exchange_rate: number
   payer_id: string
   card_id: string | null
   card_name: string | null
@@ -54,14 +60,49 @@ export function useTransactions(groupId: string | null = null) {
       const { data: txData, error: txError } = await query
       if (txError) throw txError
 
-      // Fetch Profiles to map names
-      const { data: profileData, error: profileError } = await supabase
+      // Fetch Profiles to map names using secure joins and backups
+      const profileMap = new Map<string, string>()
+
+      // 1. If inside a group, query profiles via group_members which has fully permitted RLS path
+      if (groupId) {
+        const { data: memberData } = await supabase
+          .from('group_members')
+          .select('profiles(id, name)')
+          .eq('group_id', groupId)
+
+        if (memberData) {
+          memberData.forEach((row: any) => {
+            if (row.profiles) {
+              profileMap.set(row.profiles.id, row.profiles.name || 'Group Member')
+            }
+          })
+        }
+      }
+
+      // 2. Query direct profiles as wide fallback
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('id, name')
 
-      const profileMap = new Map<string, string>()
-      if (!profileError && profileData) {
-        profileData.forEach((p) => profileMap.set(p.id, p.name || 'Unknown User'))
+      if (profileData) {
+        profileData.forEach((p) => {
+          if (p.name) profileMap.set(p.id, p.name)
+        })
+      }
+
+      // 3. Ensure current user's profile is correctly mapped
+      if (user) {
+        if (!profileMap.has(user.id)) {
+          const { data: myProfile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .single()
+          if (myProfile?.name) {
+            profileMap.set(user.id, myProfile.name)
+          }
+        }
+        profileMap.set(user.id, profileMap.get(user.id) || 'Me')
       }
 
       const mappedTx: Transaction[] = (txData || []).map((t) => ({
@@ -104,6 +145,12 @@ export function useTransactions(groupId: string | null = null) {
   const addTransaction = async (
     amount: number,
     description: string,
+    category: string,
+    location: string | null,
+    state: string | null,
+    currency: string,
+    foreignAmount: number,
+    exchangeRate: number,
     payerId: string,
     cardId: string | null,
     cardName: string | null,
@@ -130,6 +177,12 @@ export function useTransactions(groupId: string | null = null) {
           id: transactionId,
           amount,
           description: description.trim(),
+          category,
+          location,
+          state,
+          currency,
+          foreign_amount: foreignAmount,
+          exchange_rate: exchangeRate,
           payer_id: payerId,
           card_id: cardId && cardId.startsWith('preset-') ? null : cardId,
           card_name: cardName,

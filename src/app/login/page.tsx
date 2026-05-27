@@ -15,11 +15,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [isResetPassword, setIsResetPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) {
+    if (!email) {
+      toast.error('Please enter your email')
+      return
+    }
+    if (!isResetPassword && !password) {
       toast.error('Please fill in all fields')
       return
     }
@@ -30,7 +35,14 @@ export default function LoginPage() {
 
     setSubmitting(true)
     try {
-      if (isSignUp) {
+      if (isResetPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/update-password`,
+        })
+        if (error) throw error
+        toast.success('Check your email for the password reset link.')
+        setIsResetPassword(false)
+      } else if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -90,12 +102,14 @@ export default function LoginPage() {
         <Card className="border-neutral-900 bg-neutral-950/40 backdrop-blur-2xl shadow-2xl overflow-hidden">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-bold text-white">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+              {isResetPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
             </CardTitle>
             <CardDescription className="text-neutral-400 text-xs">
-              {isSignUp
-                ? 'Set up your TripFinance account'
-                : 'Sign in to manage your private and family budgets'}
+              {isResetPassword
+                ? 'Enter your email to receive a reset link'
+                : isSignUp
+                  ? 'Set up your TripFinance account'
+                  : 'Sign in to manage your private and family budgets'}
             </CardDescription>
           </CardHeader>
 
@@ -138,22 +152,35 @@ export default function LoginPage() {
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
-                  <KeyRound className="h-3.5 w-3.5" /> Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
-                />
-                {isSignUp && (
-                  <p className="text-[10px] text-neutral-600 pl-1">Minimum 6 characters</p>
-                )}
-              </div>
+              {!isResetPassword && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center pr-1">
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                      <KeyRound className="h-3.5 w-3.5" /> Password
+                    </label>
+                    {!isSignUp && (
+                      <button
+                        type="button"
+                        onClick={() => setIsResetPassword(true)}
+                        className="text-[10px] text-neutral-500 hover:text-white transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
+                  />
+                  {isSignUp && (
+                    <p className="text-[10px] text-neutral-600 pl-1">Minimum 6 characters</p>
+                  )}
+                </div>
+              )}
 
               <Button
                 type="submit"
@@ -162,6 +189,8 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                ) : isResetPassword ? (
+                  'Send Reset Link'
                 ) : isSignUp ? (
                   'Create Account'
                 ) : (
@@ -169,16 +198,27 @@ export default function LoginPage() {
                 )}
               </Button>
 
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-xs text-neutral-400 hover:text-white transition-colors duration-300 font-semibold"
-                >
-                  {isSignUp
-                    ? 'Already have an account? Sign In'
-                    : 'New here? Create a family account'}
-                </button>
+              <div className="text-center pt-1 flex flex-col gap-2">
+                {isResetPassword && (
+                  <button
+                    type="button"
+                    onClick={() => setIsResetPassword(false)}
+                    className="text-xs text-neutral-400 hover:text-white transition-colors duration-300 font-semibold"
+                  >
+                    Back to Sign In
+                  </button>
+                )}
+                {!isResetPassword && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSignUp(!isSignUp)}
+                    className="text-xs text-neutral-400 hover:text-white transition-colors duration-300 font-semibold"
+                  >
+                    {isSignUp
+                      ? 'Already have an account? Sign In'
+                      : 'New here? Create a family account'}
+                  </button>
+                )}
               </div>
             </form>
 

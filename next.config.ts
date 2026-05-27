@@ -9,7 +9,7 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {}, // Silence Next.js 16 Turbopack/webpack conflict warning in dev mode
 };
 
 export default withSerwist(nextConfig);

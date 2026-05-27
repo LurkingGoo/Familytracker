@@ -16,6 +16,7 @@ export default function CardsDashboard() {
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [newCardName, setNewCardName] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [adding, setAdding] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -44,18 +45,45 @@ export default function CardsDashboard() {
     if (!newCardName.trim()) return
     setAdding(true)
     try {
+      let cardImageUrl = null
+
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop()
+        const fileName = `${user?.id}-${Date.now()}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('card_images')
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('card_images')
+          .getPublicUrl(fileName)
+
+        cardImageUrl = publicUrl
+      }
+
       const { error } = await supabase
         .from('cards')
         .insert({
           user_id: user?.id,
-          card_name: newCardName.trim()
+          card_name: newCardName.trim(),
+          card_image_url: cardImageUrl
         })
+
       if (error) throw error
+      
       toast.success('Card added to your secure wallet!')
       setNewCardName('')
+      setImageFile(null)
       await fetchCards()
       setActiveIndex(0)
     } catch (err: any) {
+      console.error(err)
       toast.error(err.message || 'Failed to add card')
     } finally {
       setAdding(false)
@@ -144,11 +172,18 @@ export default function CardsDashboard() {
                     >
                       {/* Premium Card Frame */}
                       <div className="w-full h-full rounded-2xl p-5 relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-neutral-800 shadow-2xl flex flex-col justify-between">
+                        {card.card_image_url && (
+                          <img
+                            src={card.card_image_url}
+                            alt="Card Background"
+                            className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-45 mix-blend-screen"
+                          />
+                        )}
                         {/* Shimmer Highlight */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.04] to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.04] to-transparent pointer-events-none z-10" />
                         
                         {/* Header Details */}
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start z-20">
                           <div className="flex items-center gap-1.5">
                             <Sparkles className="h-4 w-4 text-neutral-400" />
                             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Vault</span>
@@ -157,7 +192,7 @@ export default function CardsDashboard() {
                         </div>
 
                         {/* Card Name */}
-                        <div className="space-y-0.5">
+                        <div className="space-y-0.5 z-20">
                           <h4 className="text-base font-black tracking-wide text-white truncate max-w-full">
                             {card.card_name}
                           </h4>
@@ -167,14 +202,17 @@ export default function CardsDashboard() {
                         </div>
 
                         {/* Card Chip / Brand Metallic Accent */}
-                        <div className="flex justify-between items-end">
+                        <div className="flex justify-between items-end z-20">
                           <div className="h-6 w-8 rounded-md bg-neutral-900 border border-neutral-800/80 flex items-center justify-center">
                             <div className="h-3 w-4 rounded-sm border border-neutral-700/60" />
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteCard(card.id)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteCard(card.id)
+                            }}
                             className="h-7 w-7 text-neutral-600 hover:text-rose-400 hover:bg-rose-950/15 rounded-md"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -219,6 +257,28 @@ export default function CardsDashboard() {
                 placeholder="e.g. Target RedCard"
                 className="w-full bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-xl py-3.5 px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-300"
               />
+            </div>
+
+            {/* Photo Upload Field */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider pl-0.5">
+                Upload Card Photo (Optional)
+              </label>
+              <div className="relative flex items-center justify-center border border-neutral-700 hover:border-neutral-500 bg-neutral-900 rounded-xl py-3 px-4 text-xs cursor-pointer transition-colors duration-200">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0])
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <span className="text-slate-400 font-medium truncate max-w-full">
+                  {imageFile ? imageFile.name : 'Choose Photo or Take Picture'}
+                </span>
+              </div>
             </div>
             
             <Button

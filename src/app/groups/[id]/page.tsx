@@ -6,12 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/providers/supabase-provider'
 import { useTransactions } from '@/hooks/use-transactions'
 import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog'
+import { StateSpendingChart } from '@/components/analytics/state-spending-chart'
 import { calculateDebts } from '@/lib/balance-solver'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Users, ArrowUpRight, TrendingUp, Sparkles, FolderLock, Landmark, CheckSquare, Trash2, Check, Copy } from 'lucide-react'
+import { ArrowLeft, Users, ArrowUpRight, TrendingUp, Sparkles, FolderLock, Landmark, CheckSquare, Trash2, Check, Copy, ReceiptText } from 'lucide-react'
 import { toast } from 'sonner'
+import { EditTransactionDialog } from '@/components/transactions/edit-transaction-dialog'
+import { getStateName } from '@/lib/us-states'
 
 interface GroupDetails {
   id: string
@@ -46,6 +49,7 @@ export default function GroupWorkspace() {
   const [loadingDetails, setLoadingDetails] = useState(true)
   const [settling, setSettling] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState<string>('All')
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -114,12 +118,31 @@ export default function GroupWorkspace() {
   const handleAddTx = async (
     amount: number,
     description: string,
+    category: string,
+    location: string | null,
+    state: string | null,
+    currency: string,
+    foreignAmount: number,
+    exchangeRate: number,
     payerId: string,
     cardId: string | null,
     cardName: string | null,
     splitInputs: Array<{ debtorId: string; amountOwed: number }>
   ) => {
-    const isSuccess = await addTransaction(amount, description, payerId, cardId, cardName, splitInputs)
+    const isSuccess = await addTransaction(
+      amount,
+      description,
+      category,
+      location,
+      state,
+      currency,
+      foreignAmount,
+      exchangeRate,
+      payerId,
+      cardId,
+      cardName,
+      splitInputs
+    )
     if (isSuccess) {
       await refetch()
     }
@@ -202,14 +225,25 @@ export default function GroupWorkspace() {
       <div className="mx-auto max-w-[600px] w-full z-10 relative">
         {/* Navigation Bar */}
         <div className="flex items-center gap-3 mb-6">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push('/groups')}
-            className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.push('/expenses')}
+              className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
+              title="All Expenses"
+            >
+              <ReceiptText className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.push('/groups')}
+              className="border-neutral-900 bg-neutral-900/40 text-slate-400 hover:text-white rounded-xl h-9 w-9"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </div>
           <div>
             <h2 className="text-sm font-bold text-white leading-none">
               {loadingDetails ? 'Loading details...' : group?.title}
@@ -267,6 +301,8 @@ export default function GroupWorkspace() {
           </Card>
         )}
 
+        <StateSpendingChart transactions={transactions} />
+
         {/* Action bar and settlement lists */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <Card className="border-slate-900 bg-slate-950/30 rounded-2xl p-4 flex flex-col justify-between gap-4">
@@ -311,7 +347,7 @@ export default function GroupWorkspace() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
-              Group Ledgers ({transactions.length})
+              Group Ledgers ({categoryFilter === 'All' ? transactions.length : transactions.filter(t => t.category === categoryFilter).length})
             </h3>
             {!loadingDetails && members.length > 0 && (
               <AddTransactionDialog
@@ -321,6 +357,30 @@ export default function GroupWorkspace() {
               />
             )}
           </div>
+
+          {/* Category Filter Chips */}
+          {!loadingTx && transactions.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap pb-1">
+              {['All', 'Food', 'Transport', 'Accommodation', 'Shopping', 'Entertainment', 'Other'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase tracking-wider border transition-all duration-200 ${
+                    categoryFilter === cat
+                      ? 'bg-white text-black border-white'
+                      : 'bg-neutral-950/40 text-slate-400 border-neutral-800 hover:border-neutral-600 hover:text-slate-200'
+                  }`}
+                >
+                  {cat === 'All' ? '✦ All' :
+                   cat === 'Food' ? '🍔' :
+                   cat === 'Transport' ? '🚕' :
+                   cat === 'Accommodation' ? '🏨' :
+                   cat === 'Shopping' ? '🛍️' :
+                   cat === 'Entertainment' ? '🎢' : '🏷️'} {cat === 'All' ? '' : cat}
+                </button>
+              ))}
+            </div>
+          )}
 
           {loadingTx ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -344,8 +404,20 @@ export default function GroupWorkspace() {
                     </p>
                   </motion.div>
                 ) : (
-                  transactions.map((tx) => {
+                  (() => {
+                    const filtered = categoryFilter === 'All'
+                      ? transactions
+                      : transactions.filter(tx => tx.category === categoryFilter || (categoryFilter === 'Other' && !tx.category))
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center border border-neutral-900 border-dashed rounded-2xl py-12 px-4 text-center bg-neutral-950/20">
+                          <p className="text-[10px] text-slate-500">No {categoryFilter} expenses in this workspace.</p>
+                        </div>
+                      )
+                    }
+                    return filtered.map((tx) => {
                     const isSettlement = tx.description.startsWith('Settlement:')
+                    const stateName = getStateName(tx.state)
                     return (
                       <motion.div
                         key={tx.id}
@@ -354,8 +426,15 @@ export default function GroupWorkspace() {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Card className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-950/60 backdrop-blur-2xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 max-w-[65%]">
+                        <Card className="border-neutral-900 bg-neutral-950/40 hover:bg-neutral-950/60 backdrop-blur-2xl transition-all duration-300 group overflow-hidden p-4 rounded-xl flex items-center justify-between gap-4 relative cursor-pointer">
+                          {!isSettlement && (
+                            <EditTransactionDialog
+                              transaction={tx}
+                              groupId={groupId}
+                              onSuccess={refetch}
+                            />
+                          )}
+                          <div className={`flex items-center gap-3 max-w-[60%] relative z-10 ${!isSettlement ? 'pointer-events-none' : ''}`}>
                             <div className={`h-10 w-10 flex items-center justify-center rounded-xl border transition-colors duration-300 ${isSettlement ? 'bg-emerald-950/20 border-emerald-900 text-emerald-400' : 'bg-neutral-900/60 border-neutral-800 text-neutral-400 group-hover:text-white'}`}>
                               <ArrowUpRight className="h-4.5 w-4.5" />
                             </div>
@@ -365,11 +444,26 @@ export default function GroupWorkspace() {
                               </h4>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <Badge className="border-slate-900 bg-slate-900/60 text-slate-400 rounded-md text-[8px] px-1.5 py-0">
-                                  Paid by: {tx.payer_name}
+                                  Paid by: {tx.payer_id === user?.id ? 'Me' : (tx.payer_name || 'Group Member')}
                                 </Badge>
+                                {tx.category && (
+                                  <Badge className="border-indigo-950 bg-indigo-950/20 text-indigo-400 rounded-md text-[8px] px-1.5 py-0">
+                                    {tx.category}
+                                  </Badge>
+                                )}
                                 <Badge className="border-slate-900 bg-slate-900/60 text-slate-400 rounded-md text-[8px] px-1.5 py-0">
                                   {tx.card_name || 'Cash'}
                                 </Badge>
+                                {tx.location && (
+                                  <span className="text-[9px] text-slate-400 flex items-center gap-0.5">
+                                    • 📍 {tx.location}
+                                  </span>
+                                )}
+                                {stateName && (
+                                  <span className="text-[9px] text-slate-400 flex items-center gap-0.5">
+                                    • 🇺🇸 {stateName}
+                                  </span>
+                                )}
                                 <span className="text-[9px] text-slate-500">
                                   {new Date(tx.created_at).toLocaleDateString(undefined, {
                                     month: 'short',
@@ -380,23 +474,39 @@ export default function GroupWorkspace() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3">
-                            <span className={`text-sm font-black tracking-wide ${isSettlement ? 'text-emerald-400' : 'text-white'}`}>
-                              ${tx.amount.toFixed(2)}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteTransaction(tx.id)}
-                              className="text-slate-600 hover:text-rose-400 hover:bg-rose-950/10 rounded-lg h-8 w-8 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          <div className="flex items-center gap-2 relative z-10">
+                            <div className="flex flex-col items-end justify-center">
+                              {tx.currency === 'SGD' || isSettlement ? (
+                                <span className={`text-sm font-black tracking-wide ${isSettlement ? 'text-emerald-400' : 'text-white'}`}>
+                                  ${tx.amount.toFixed(2)}
+                                </span>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-black text-white tracking-wide">
+                                    -${tx.foreign_amount.toFixed(2)} {tx.currency}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-slate-500">
+                                    S${tx.amount.toFixed(2)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            {tx.payer_id === user?.id && !isSettlement && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => { e.stopPropagation(); deleteTransaction(tx.id) }}
+                                className="text-slate-600 hover:text-rose-400 hover:bg-rose-950/10 rounded-lg h-8 w-8 transition-all duration-200 shrink-0"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </Card>
                       </motion.div>
                     )
-                  })
+                    })
+                  })()
                 )}
               </AnimatePresence>
             </div>

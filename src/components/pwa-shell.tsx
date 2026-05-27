@@ -19,7 +19,7 @@ function InnerShell({ children }: { children: React.ReactNode }) {
   const showNav = !isAuthPage && !loading
 
   const navItems = [
-    { label: 'Personal', path: '/personal', icon: Wallet },
+    { label: 'Home', path: '/personal', icon: Wallet },
     { label: 'Workspaces', path: '/groups', icon: Users },
     { label: 'Wallet', path: '/cards', icon: CreditCard },
   ]
@@ -43,6 +43,7 @@ function InnerShell({ children }: { children: React.ReactNode }) {
                 <button
                   key={item.path}
                   onClick={() => router.push(item.path)}
+                  title={item.label}
                   className="flex flex-col items-center justify-center gap-1 w-20 h-full relative group"
                 >
                   {/* Active highlight backing */}
