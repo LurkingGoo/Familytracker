@@ -3,6 +3,14 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
+  // 1. Immediately bypass Next.js router prefetch requests to prevent massive surges of edge calls
+  if (
+    request.headers.get('x-middleware-prefetch') ||
+    request.headers.get('purpose') === 'prefetch'
+  ) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
