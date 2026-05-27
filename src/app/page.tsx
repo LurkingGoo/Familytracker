@@ -1,19 +1,7 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export default function RootLandingPageFallback() {
-  const router = useRouter()
-
-  useEffect(() => {
-    router.replace('/login')
-  }, [router])
-
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center text-white">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-    </div>
-  )
+// The proxy handles auth-aware redirection, but provide a clean server-side
+// fallback so there's no client flash or double-navigation race condition.
+export default function RootPage() {
+  redirect('/login')
 }
-

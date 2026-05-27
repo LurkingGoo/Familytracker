@@ -63,11 +63,17 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleInitialAuth = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession()
-        setSession(initialSession)
-        setUser(initialSession?.user ?? null)
-        if (initialSession?.user) {
+        // Use getUser() (not getSession()) for a trusted server-validated identity check
+        const { data: { user: initialUser } } = await supabase.auth.getUser()
+        if (initialUser) {
+          // Reconstruct a minimal session reference for downstream consumers
+          const { data: { session: initialSession } } = await supabase.auth.getSession()
+          setSession(initialSession)
+          setUser(initialUser)
           await refreshProfile()
+        } else {
+          setSession(null)
+          setUser(null)
         }
       } catch (err) {
         console.error('Error in initial auth check:', err)
@@ -115,7 +121,8 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
       email,
       options: {
         emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
-        shouldCreateUser: true,
+        // Prevent silent ghost-account creation on email typos
+        shouldCreateUser: false,
       },
     })
     if (error) throw error

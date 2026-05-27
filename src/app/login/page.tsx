@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/providers/supabase-provider'
 import { Button } from '@/components/ui/button'
@@ -9,16 +9,29 @@ import { Sparkles, ShieldCheck, TrendingUp, KeyRound, Mail, User as UserIcon, Ar
 import { toast } from 'sonner'
 
 export default function LoginPage() {
-  const { signInWithOtp, verifyOtp, signUpWithPassword, signInWithPassword, loading } = useAuth()
+  const { supabase, signInWithOtp, verifyOtp, signUpWithPassword, signInWithPassword, loading } = useAuth()
   
   // Auth mode selection: 'otp' = One-Time Code, 'password' = Email/Password credentials
-  const [authMode, setAuthMode] = useState<'otp' | 'password'>('otp')
+  const [authMode, setAuthMode] = useState<'otp' | 'password'>('password')
   
   // Email OTP Flow States
   const [email, setEmail] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [otpToken, setOtpToken] = useState('')
   const [submittingOtp, setSubmittingOtp] = useState(false)
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(() => {
+    // Survive page refresh — read from sessionStorage
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('otp_cooldown_until')
+      if (stored) {
+        const val = parseInt(stored)
+        return val > Date.now() ? val : null
+      }
+    }
+    return null
+  })
+  const [cooldownRemaining, setCooldownRemaining] = useState(0)
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   
   // Email & Password Flow States
   const [passEmail, setPassEmail] = useState('')
@@ -26,6 +39,24 @@ export default function LoginPage() {
   const [passName, setPassName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [submittingPassword, setSubmittingPassword] = useState(false)
+
+  // Cooldown countdown effect
+  useEffect(() => {
+    if (!cooldownUntil) return
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000))
+      setCooldownRemaining(remaining)
+      if (remaining <= 0) {
+        setCooldownUntil(null)
+        if (cooldownRef.current) clearInterval(cooldownRef.current)
+      }
+    }
+    tick()
+    cooldownRef.current = setInterval(tick, 1000)
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current)
+    }
+  }, [cooldownUntil])
 
   // OTP handlers
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -35,12 +66,26 @@ export default function LoginPage() {
       return
     }
     setSubmittingOtp(true)
+    // Set 60s cooldown immediately on every attempt to prevent double-sends
+    const until = Date.now() + 60_000
+    setCooldownUntil(until)
+    // Persist across page refresh
+    if (typeof window !== 'undefined') sessionStorage.setItem('otp_cooldown_until', String(until))
     try {
       await signInWithOtp(email)
       setOtpSent(true)
       toast.success('Verification code has been sent to your email!')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send verification code')
+      const msg: string = error?.message ?? ''
+      if (
+        msg.toLowerCase().includes('rate limit') ||
+        msg.toLowerCase().includes('too many') ||
+        msg.toLowerCase().includes('429')
+      ) {
+        toast.error('Too many requests — please wait 60 seconds before trying again.')
+      } else {
+        toast.error(msg || 'Failed to send verification code')
+      }
     } finally {
       setSubmittingOtp(false)
     }
@@ -78,8 +123,14 @@ export default function LoginPage() {
     setSubmittingPassword(true)
     try {
       if (isSignUp) {
-        await signUpWithPassword(passEmail, password, passName)
-        toast.success('Account created successfully!')
+        const { data } = await supabase.auth.signUp({ email: passEmail, password, options: { data: { name: passName || passEmail.split('@')[0] } } })
+        if (data.session) {
+          // Already confirmed (e.g. email confirmation OFF) — redirect handled by onAuthStateChange
+          toast.success('Account created successfully!')
+        } else {
+          // Confirmation email sent — session not yet active
+          toast.success('Almost there! Check your inbox to verify your email, then sign in.')
+        }
       } else {
         await signInWithPassword(passEmail, password)
         toast.success('Successfully signed in!')
@@ -245,10 +296,16 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={handleSendOtp}
-                        disabled={isFormLoading}
-                        className="w-full text-center text-xs text-neutral-400 hover:text-white transition-colors duration-300 py-2 font-medium"
+                        disabled={isFormLoading || !!cooldownUntil}
+                        className={`w-full text-center text-xs transition-colors duration-300 py-2 font-medium ${
+                          cooldownUntil
+                            ? 'text-neutral-600 cursor-not-allowed'
+                            : 'text-neutral-400 hover:text-white'
+                        }`}
                       >
-                        Resend Code
+                        {cooldownUntil
+                          ? `Resend available in ${cooldownRemaining}s`
+                          : 'Resend Code'}
                       </button>
                     </form>
                   )}
